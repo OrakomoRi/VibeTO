@@ -15,6 +15,9 @@ package-lock.json
 # app.asar build output
 release/
 
+# Original game asar (binary, large — store locally in original/app.asar)
+original/*.asar
+
 # Temp build files
 tmp/
 temp/
