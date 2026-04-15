@@ -8,7 +8,7 @@
 
 
 > [!NOTE]
-> **A note on the name.** The "Vibe" in VibeTO is honest: approximately 99% of this project was built with AI-assisted vibecoding. We consider this a feature, not a bug. The other 1% was vibin'.
+> The "Vibe" in VibeTO is honest: approximately 99% of this project was built with AI-assisted vibecoding. We consider this a feature, not a bug. The other 1% was vibin'.
 
 ---
 
