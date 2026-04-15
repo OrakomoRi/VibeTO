@@ -145,8 +145,21 @@ pub fn patch_asar(
     let buf = fs::read(asar_path).map_err(|e| e.to_string())?;
     let (mut header, data_start) = parse_asar(&buf)?;
 
-    // Collect all packed file entries (immutable pass)
+    // Collect all file entries; find unpacked targets before filtering.
     let mut all_files = collect_files(&header, "");
+
+    let unpacked_main = all_files.iter()
+        .filter(|f| f.unpacked)
+        .find(|f| {
+            let p: Vec<&str> = f.path.split('/').collect();
+            p.last() == Some(&"main.js") && p.len() <= 2
+        })
+        .map(|f| f.path.clone());
+    let unpacked_preload = all_files.iter()
+        .filter(|f| f.unpacked)
+        .find(|f| f.path.ends_with("content/scripts/preload.js"))
+        .map(|f| f.path.clone());
+
     all_files.retain(|f| !f.unpacked);
     all_files.sort_by_key(|f| f.offset);
 
@@ -160,7 +173,14 @@ pub fn patch_asar(
     for file in &all_files {
         let orig = &buf[data_start + file.offset..data_start + file.offset + file.size];
 
-        let data: Vec<u8> = if file.path == "main.js" {
+        // Match main.js at root or one level deep (e.g. "main.js" or "app/main.js"),
+        // but not buried inside node_modules or other deep subdirectories.
+        let parts: Vec<&str> = file.path.split('/').collect();
+        let is_main_js = parts.last() == Some(&"main.js") && parts.len() <= 2;
+        // Match preload.js by suffix to handle any top-level app/ wrapper.
+        let is_preload_js = file.path.ends_with("content/scripts/preload.js");
+
+        let data: Vec<u8> = if is_main_js {
             main_js_found = true;
             let mut content = String::from_utf8_lossy(orig).into_owned();
             if content.contains(PATCH_MARKER) {
@@ -175,17 +195,17 @@ pub fn patch_asar(
             } else {
                 format!("{}\n\n{}", bootstrap, content)
             };
-            log("main.js patched.");
+            log(&format!("main.js patched. ({})", file.path));
             patched.into_bytes()
-        } else if file.path == "content/scripts/preload.js" {
+        } else if is_preload_js {
             preload_js_found = true;
             let content = String::from_utf8_lossy(orig);
             if !content.contains("window.ModLoader") {
                 let patched = format!("{}\n\n{}", content, preload_patch);
-                log("preload.js patched.");
+                log(&format!("preload.js patched. ({})", file.path));
                 patched.into_bytes()
             } else {
-                log("preload.js already patched — skipped.");
+                log(&format!("preload.js already patched — skipped. ({})", file.path));
                 orig.to_vec()
             }
         } else {
@@ -197,18 +217,83 @@ pub fn patch_asar(
         segments.push(data);
     }
 
+    // Patch unpacked files on disk first so we can update their size/integrity in the header.
+    let unpacked_base = {
+        let mut s = asar_path.as_os_str().to_owned();
+        s.push(".unpacked");
+        std::path::PathBuf::from(s)
+    };
+
+    // (path_in_header, new_size) for unpacked files we patched
+    let mut unpacked_updates: Vec<(String, usize)> = Vec::new();
+
     if !main_js_found {
-        log("WARNING: main.js not found in asar — bootstrap not injected.");
-    }
-    if !preload_js_found {
-        log("WARNING: content/scripts/preload.js not found in asar — preload not patched.");
+        if let Some(rel) = unpacked_main {
+            let p = unpacked_base.join(&rel);
+            if p.exists() {
+                let content = fs::read_to_string(&p).map_err(|e| e.to_string())?;
+                let content = if content.contains(PATCH_MARKER) {
+                    strip_bootstrap(&content)
+                } else {
+                    content
+                };
+                let patched = if content.starts_with("\"use strict\";") {
+                    content.replacen(
+                        "\"use strict\";",
+                        &format!("\"use strict\";\n\n{}", bootstrap),
+                        1,
+                    )
+                } else {
+                    format!("{}\n\n{}", bootstrap, content)
+                };
+                let patched_bytes = patched.into_bytes();
+                unpacked_updates.push((rel.clone(), patched_bytes.len()));
+                fs::write(&p, patched_bytes).map_err(|e| e.to_string())?;
+                log(&format!("main.js patched. (unpacked: {})", rel));
+                main_js_found = true;
+            }
+        }
     }
 
-    // Update header with new offsets/sizes
+    if !preload_js_found {
+        if let Some(rel) = unpacked_preload {
+            let p = unpacked_base.join(&rel);
+            if p.exists() {
+                let content = fs::read_to_string(&p).map_err(|e| e.to_string())?;
+                if !content.contains("window.ModLoader") {
+                    let patched = format!("{}\n\n{}", content, preload_patch);
+                    let patched_bytes = patched.into_bytes();
+                    unpacked_updates.push((rel.clone(), patched_bytes.len()));
+                    fs::write(&p, patched_bytes).map_err(|e| e.to_string())?;
+                    log(&format!("preload.js patched. (unpacked: {})", rel));
+                } else {
+                    log(&format!("preload.js already patched — skipped. (unpacked: {})", rel));
+                }
+                preload_js_found = true;
+            }
+        }
+    }
+
+    if !main_js_found {
+        log("WARNING: main.js not found — bootstrap not injected.");
+    }
+    if !preload_js_found {
+        log("WARNING: content/scripts/preload.js not found — preload not patched.");
+    }
+
+    // Update header: packed files (offset + size) and unpacked patched files (size only).
     for (path, offset, size) in &new_meta {
         if let Some(entry) = get_file_entry_mut(&mut header, path) {
             entry["offset"] = serde_json::json!(offset.to_string());
             entry["size"] = serde_json::json!(*size);
+            if let Some(obj) = entry.as_object_mut() {
+                obj.remove("integrity");
+            }
+        }
+    }
+    for (path, new_size) in &unpacked_updates {
+        if let Some(entry) = get_file_entry_mut(&mut header, path) {
+            entry["size"] = serde_json::json!(*new_size);
             if let Some(obj) = entry.as_object_mut() {
                 obj.remove("integrity");
             }
@@ -225,10 +310,18 @@ pub fn patch_asar(
 }
 
 pub fn is_patched(asar_path: &Path) -> bool {
-    match fs::read(asar_path) {
-        Ok(buf) => buf
-            .windows(PATCH_MARKER.len())
-            .any(|w| w == PATCH_MARKER.as_bytes()),
-        Err(_) => false,
+    if let Ok(buf) = fs::read(asar_path) {
+        if buf.windows(PATCH_MARKER.len()).any(|w| w == PATCH_MARKER.as_bytes()) {
+            return true;
+        }
     }
+    // Also check app.asar.unpacked/main.js for games that store main.js unpacked.
+    let unpacked_main = {
+        let mut s = asar_path.as_os_str().to_owned();
+        s.push(".unpacked/main.js");
+        std::path::PathBuf::from(s)
+    };
+    fs::read_to_string(&unpacked_main)
+        .map(|c| c.contains(PATCH_MARKER))
+        .unwrap_or(false)
 }

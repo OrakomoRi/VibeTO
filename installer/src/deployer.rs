@@ -119,6 +119,12 @@ pub fn undeploy(keep_mods: bool, log: impl Fn(&str)) -> Result<(), String> {
         log("Removed app.asar.unpacked backup.");
     }
 
+    let loader_dir = ml_dir.join("loader");
+    if loader_dir.exists() {
+        fs::remove_dir_all(&loader_dir).map_err(|e| e.to_string())?;
+        log("Removed loader directory.");
+    }
+
     if !keep_mods {
         let mods_dir = ml_dir.join("mods");
         if mods_dir.exists() {
