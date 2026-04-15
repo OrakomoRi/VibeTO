@@ -1,6 +1,6 @@
 {
 	"name": "vibeto-installer",
-	"version": "1.0.0",
+	"version": "1.0.2",
 	"author": "OrakomoRi",
 	"description": "VibeTO Installer - A user-friendly installer for VibeTO, the Tanki Online ModLoader.",
 	"private": true,
