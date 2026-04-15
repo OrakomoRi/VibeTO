@@ -6,6 +6,8 @@
 
 **VibeTO** is a mod loader for [Tanki Online](https://tankionline.com). It patches the game client to support community mods — without touching the game's installation directory.
 
+
+> [!NOTE]
 > **A note on the name.** The "Vibe" in VibeTO is honest: approximately 99% of this project was built with AI-assisted vibecoding. We consider this a feature, not a bug. The other 1% was vibin'.
 
 ---

@@ -2,12 +2,17 @@ use std::fs;
 use std::path::{Path, PathBuf};
 
 pub fn modloader_dir() -> PathBuf {
-    let home = dirs::home_dir().unwrap_or_default();
     if cfg!(target_os = "windows") {
-        home.join("AppData/Roaming/VibeTO")
+        // Use %APPDATA% directly — matches what Electron's app.getPath('appData') returns.
+        // dirs::home_dir() uses USERPROFILE which can differ if AppData is redirected.
+        if let Ok(appdata) = std::env::var("APPDATA") {
+            return PathBuf::from(appdata).join("VibeTO");
+        }
+        dirs::home_dir().unwrap_or_default().join("AppData/Roaming/VibeTO")
     } else if cfg!(target_os = "macos") {
-        home.join("Library/Application Support/VibeTO")
+        dirs::home_dir().unwrap_or_default().join("Library/Application Support/VibeTO")
     } else {
+        let home = dirs::home_dir().unwrap_or_default();
         let config = std::env::var("XDG_CONFIG_HOME")
             .map(PathBuf::from)
             .unwrap_or_else(|_| home.join(".config"));

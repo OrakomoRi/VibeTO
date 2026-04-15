@@ -154,11 +154,14 @@ pub fn patch_asar(
     let mut segments: Vec<Vec<u8>> = Vec::new();
     let mut new_meta: Vec<(String, usize, usize)> = Vec::new(); // (path, new_offset, new_size)
     let mut new_offset = 0usize;
+    let mut main_js_found = false;
+    let mut preload_js_found = false;
 
     for file in &all_files {
         let orig = &buf[data_start + file.offset..data_start + file.offset + file.size];
 
         let data: Vec<u8> = if file.path == "main.js" {
+            main_js_found = true;
             let mut content = String::from_utf8_lossy(orig).into_owned();
             if content.contains(PATCH_MARKER) {
                 content = strip_bootstrap(&content);
@@ -175,12 +178,14 @@ pub fn patch_asar(
             log("main.js patched.");
             patched.into_bytes()
         } else if file.path == "content/scripts/preload.js" {
+            preload_js_found = true;
             let content = String::from_utf8_lossy(orig);
             if !content.contains("window.ModLoader") {
                 let patched = format!("{}\n\n{}", content, preload_patch);
                 log("preload.js patched.");
                 patched.into_bytes()
             } else {
+                log("preload.js already patched — skipped.");
                 orig.to_vec()
             }
         } else {
@@ -190,6 +195,13 @@ pub fn patch_asar(
         new_meta.push((file.path.clone(), new_offset, data.len()));
         new_offset += data.len();
         segments.push(data);
+    }
+
+    if !main_js_found {
+        log("WARNING: main.js not found in asar — bootstrap not injected.");
+    }
+    if !preload_js_found {
+        log("WARNING: content/scripts/preload.js not found in asar — preload not patched.");
     }
 
     // Update header with new offsets/sizes

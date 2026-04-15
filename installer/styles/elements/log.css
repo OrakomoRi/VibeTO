@@ -26,6 +26,8 @@
 	font-size: .75rem;
 	line-height: 1.7;
 	color: var(--text-muted);
+	user-select: text;
+	cursor: text;
 }
 
 .log-body::-webkit-scrollbar {
