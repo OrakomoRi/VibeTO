@@ -1,0 +1,13 @@
+.content {
+	padding: 1.25rem;
+	display: flex;
+	flex-direction: column;
+	gap: 1rem;
+	height: calc(100vh - 2.5rem);
+}
+
+.actions {
+	display: flex;
+	gap: .5rem;
+	flex-wrap: wrap;
+}

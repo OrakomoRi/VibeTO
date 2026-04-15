@@ -1,0 +1,44 @@
+.status-row {
+	display: flex;
+	gap: .5rem;
+	flex-wrap: wrap;
+}
+
+.status-item {
+	flex: 1;
+	min-width: 8rem;
+	display: flex;
+	align-items: center;
+	gap: .5rem;
+	background: var(--surface);
+	border: 1px solid var(--border);
+	border-radius: var(--radius-sm);
+	padding: .5rem .75rem;
+}
+
+.status-dot {
+	width: .5rem;
+	height: .5rem;
+	border-radius: 50%;
+	background: var(--text-subtle);
+	flex-shrink: 0;
+	transition: background .3s;
+}
+
+.status-dot.ok {
+	background: var(--success);
+	box-shadow: 0 0 .5rem rgba(74, 222, 128, .4);
+}
+
+.status-dot.warn {
+	background: var(--warning);
+}
+
+.status-dot.err {
+	background: var(--danger);
+}
+
+.status-label {
+	font-size: .75rem;
+	color: var(--text-muted);
+}
