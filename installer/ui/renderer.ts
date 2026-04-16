@@ -59,7 +59,7 @@ invoke<string>('get_version').then((v: string) => {
 });
 
 invoke<UpdateInfo | null>('check_update').catch(() => null).then((update) => {
-	if (update && update.latestTag !== update.installedTag) {
+	if (update && update.installedTag !== null && update.latestTag !== update.installedTag) {
 		elUpdateTag.textContent = update.latestTag;
 		elUpdateBanner.style.display = '';
 	}

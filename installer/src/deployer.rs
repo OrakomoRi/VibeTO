@@ -8,7 +8,7 @@ pub fn modloader_dir() -> PathBuf {
         if let Ok(appdata) = std::env::var("APPDATA") {
             return PathBuf::from(appdata).join("VibeTO");
         }
-        dirs::home_dir().unwrap_or_default().join("AppData/Roaming/VibeTO")
+        dirs::home_dir().unwrap_or_default().join("AppData").join("Roaming").join("VibeTO")
     } else if cfg!(target_os = "macos") {
         dirs::home_dir().unwrap_or_default().join("Library/Application Support/VibeTO")
     } else {

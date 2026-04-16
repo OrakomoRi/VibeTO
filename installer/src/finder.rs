@@ -22,9 +22,9 @@ fn default_paths() -> Vec<PathBuf> {
     let home = dirs::home_dir().unwrap_or_default();
     if cfg!(target_os = "windows") {
         vec![
-            home.join("AppData/Local/Programs/Tanki Online"),
-            PathBuf::from("C:/Program Files/Tanki Online"),
-            PathBuf::from("C:/Program Files (x86)/Tanki Online"),
+            home.join("AppData").join("Local").join("Programs").join("Tanki Online"),
+            PathBuf::from(r"C:\Program Files\Tanki Online"),
+            PathBuf::from(r"C:\Program Files (x86)\Tanki Online"),
         ]
     } else if cfg!(target_os = "macos") {
         vec![
@@ -44,9 +44,9 @@ pub fn default_browse_path() -> PathBuf {
     let home = dirs::home_dir().unwrap_or_default();
     if cfg!(target_os = "windows") {
         // AppData\Local\Programs is where user-installed apps live
-        let p = home.join("AppData/Local/Programs");
+        let p = home.join("AppData").join("Local").join("Programs");
         if p.exists() { return p; }
-        home.join("AppData/Local")
+        home.join("AppData").join("Local")
     } else if cfg!(target_os = "macos") {
         PathBuf::from("/Applications")
     } else {
