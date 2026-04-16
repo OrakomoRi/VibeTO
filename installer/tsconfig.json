@@ -1,0 +1,15 @@
+{
+	"compilerOptions": {
+		"target": "ES2022",
+		"useDefineForClassFields": true,
+		"module": "ES2022",
+		"lib": ["ES2022", "DOM"],
+		"moduleResolution": "bundler",
+		"strict": false,
+		"allowJs": true,
+		"noEmit": true,
+		"skipLibCheck": true
+	},
+	"include": ["ui"],
+	"exclude": ["src-tauri", "node_modules", "dist"]
+}

@@ -1,0 +1,25 @@
+.path-row {
+	display: flex;
+	align-items: center;
+	gap: .5rem;
+	min-width: 0;
+}
+
+.path-text {
+	flex: 1;
+	font-size: .75rem;
+	color: var(--text-muted);
+	font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	min-width: 0;
+}
+
+.path-text.found {
+	color: var(--text);
+}
+
+.path-text.error {
+	color: var(--danger);
+}

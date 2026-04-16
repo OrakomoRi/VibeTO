@@ -1,0 +1,13 @@
+{
+	"name": "vibeto",
+	"version": "1.0.2",
+	"private": true,
+	"scripts": {
+		"dev": "cd installer && npm run dev",
+		"build": "cd installer && npm run build",
+		"build:asar": "node scripts/build-asar.js"
+	},
+	"devDependencies": {
+		"@electron/asar": "^3.2.10"
+	}
+}

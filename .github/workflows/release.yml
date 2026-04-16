@@ -1,0 +1,23 @@
+name: Attach Loader Files to Release
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  attach-loader:
+    name: Attach loader files
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Upload loader files to release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            loader/mod-loader.js
+            loader/preload.js

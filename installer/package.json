@@ -1,0 +1,23 @@
+{
+	"name": "vibeto-installer",
+	"version": "1.0.2",
+	"author": "OrakomoRi",
+	"description": "VibeTO Installer - A user-friendly installer for VibeTO, the Tanki Online ModLoader.",
+	"private": true,
+	"scripts": {
+		"dev": "tauri dev",
+		"build": "tauri build",
+		"dev:vite": "vite",
+		"build:vite": "vite build"
+	},
+	"dependencies": {
+		"@tauri-apps/api": "^2",
+		"@tauri-apps/plugin-dialog": "^2",
+		"@tauri-apps/plugin-shell": "^2"
+	},
+	"devDependencies": {
+		"@tauri-apps/cli": "^2",
+		"typescript": "^5",
+		"vite": "^6"
+	}
+}

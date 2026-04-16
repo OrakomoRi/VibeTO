@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+	<title>VibeTO Installer</title>
+
+	<link rel="stylesheet" href="styles/main.css" />
+
+	<script type="module" src="/ui/renderer.ts"></script>
+</head>
+
+<body>
+
+	<div class="titlebar" data-tauri-drag-region>
+		<span class="titlebar-title">VibeTO Installer</span>
+		<div class="titlebar-controls">
+			<button class="titlebar-btn" data-action="minimize" title="Minimize">&#8211;</button>
+			<button class="titlebar-btn titlebar-btn--close" data-action="close" title="Close">&#215;</button>
+		</div>
+	</div>
+
+	<main class="content">
+
+		<div class="header">
+			<div class="header-logo">
+				<div class="logo-mark">
+					<img src="assets/images/icon-64.png" alt="VibeTO" class="logo-img" />
+				</div>
+				<div>
+					<h1 class="header-title">VibeTO Installer</h1>
+					<p class="header-sub">Tanki Online ModLoader</p>
+				</div>
+			</div>
+			<span class="version-badge">v1.0.0</span>
+		</div>
+
+		<div class="card">
+			<div class="card-label">ModLoader location</div>
+			<div class="path-row">
+				<span class="path-text" data-ref="loader-path">Searching...</span>
+				<button class="btn btn--ghost" data-action="browse-loader">Open</button>
+			</div>
+		</div>
+
+		<div class="card">
+			<div class="card-label">Game location</div>
+			<div class="path-row">
+				<span class="path-text" data-ref="game-path">Searching...</span>
+				<button class="btn btn--ghost" data-action="browse">Browse</button>
+			</div>
+		</div>
+
+		<div id="update-banner" class="update-banner" style="display:none">
+			<span class="update-banner__text">A new version of VibeTO is available — <strong id="update-tag"></strong>. Run <strong>Repair</strong> to update.</span>
+		</div>
+
+		<div class="status-row">
+			<div class="status-item">
+				<span class="status-dot" data-dot="patch"></span>
+				<span class="status-label">Patch</span>
+			</div>
+			<div class="status-item">
+				<span class="status-dot" data-dot="loader"></span>
+				<span class="status-label">Loader</span>
+			</div>
+		</div>
+
+		<div class="actions">
+			<button class="btn btn--primary" data-action="install">Install</button>
+			<button class="btn btn--secondary" data-action="repair">Repair</button>
+			<button class="btn btn--danger" data-action="uninstall">Uninstall</button>
+		</div>
+
+		<div class="log-card">
+			<div class="log-header">
+				<span class="card-label">Output</span>
+			</div>
+			<div class="log-body" data-ref="log">
+				<span class="log-placeholder">Ready.</span>
+			</div>
+		</div>
+
+	</main>
+</body>
+
+</html>
